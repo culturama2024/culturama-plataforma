@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Artistas</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        .filter {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .filter label {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        .filter select {
+            padding: 5px 10px;
+            font-size: 1em;
+        }
+        .profiles {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .profile {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 250px;
+            width: 100%;
+            text-align: center;
+        }
+        .profile img {
+            border-radius: 50%;
+            max-width: 100px;
+            margin-bottom: 10px;
+        }
+        .profile-details {
+            text-align: left;
+            width: 100%;
+        }
+        .profile-photos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .profile-photos img {
+            border-radius: 5px;
+            max-width: 50px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="filter">
+            <label for="campoAccion">Filtrar por Campo de Acción:</label>
+            <select id="campoAccion">
+                <option value="all">Todos</option>
+                <option value="arte">Artes plásticas o visuales</option>
+                <option value="música">Música</option>
+                <option value="teatro">Teatro</option>
+                <option value="danza">Danza</option>
+                <option value="literatura">Literatura</option>
+                <option value="cine">Cine</option>
+                <option value="fotografía">Fotografía</option>
+                <option value="arte_callejero">Arte Urbano</option>
+                <option value="arte_web_media">Artes Web Media</option>
+                <option value="otro">Otro</option>
+            </select>
+        </div>
+        <div id="profiles" class="profiles"></div>
+    </div>
+
+    <!-- Carga de Firebase JS SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.8.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.8.1/firebase-firestore-compat.js"></script>
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPTxSNtORJdZU40efCQvNv2wKKyrYY6EI",
+            authDomain: "catalogo-64838.firebaseapp.com",
+            projectId: "catalogo-64838",
+            storageBucket: "catalogo-64838.appspot.com",
+            messagingSenderId: "1032209654548",
+            appId: "1:1032209654548:web:2068ddc97a7ce322aed801",
+            measurementId: "G-QLDGV67XS3"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function fetchProfiles(campoAccion = 'all') {
+            let query = db.collection('profiles').where('visible', '==', true);
+
+            if (campoAccion !== 'all') {
+                query = query.where('campoAccion', '==', campoAccion);
+            }
+
+            query.get().then((querySnapshot) => {
+                const profilesContainer = document.getElementById('profiles');
+                profilesContainer.innerHTML = '';
+
+                querySnapshot.forEach((doc) => {
+                    const profile = doc.data();
+                    const profileElement = document.createElement('div');
+                    profileElement.className = 'profile';
+                    profileElement.innerHTML = `
+                        <img src="${profile.profilePhoto}" alt="Foto de perfil" onerror="this.onerror=null; this.src='default-profile.png'">
+                        <div class="profile-details">
+                            <h3>${profile.nombreArtista}</h3>
+                            <p><strong>Nombre:</strong> ${profile.nombre}</p>
+                            <p><strong>Edad:</strong> ${profile.edad}</p>
+                            <p><strong>Campo de Acción:</strong> ${profile.campoAccion}</p>
+                            <p><strong>Oficio:</strong> ${profile.oficio}</p>
+                            <p><strong>Email:</strong> ${profile.email}</p>
+                            <p><strong>Facebook:</strong> ${profile.facebook}</p>
+                            <p><strong>YouTube:</strong> ${profile.youtube}</p>
+                            <p><strong>Instagram:</strong> ${profile.instagram}</p>
+                            <p><strong>Página Web:</strong> ${profile.paginaWeb}</p>
+                            <p><strong>Otro:</strong> ${profile.otro}</p>
+                            <div class="profile-photos">
+                                <strong>Fotos del Perfil:</strong>
+                                ${profile.profilePhotos ? profile.profilePhotos.map(photoUrl => `<img src="${photoUrl}" alt="Foto adicional" onerror="this.onerror=null; this.src='default-photo.png'">`).join('') : ''}
+                            </div>
+                        </div>
+                    `;
+                    profilesContainer.appendChild(profileElement);
+                });
+            }).catch((error) => {
+                console.error("Error obteniendo los perfiles: ", error);
+            });
+        }
+
+        document.getElementById('campoAccion').addEventListener('change', (event) => {
+            fetchProfiles(event.target.value);
+        });
+
+        fetchProfiles();
+    </script>
+</body>
+</html>

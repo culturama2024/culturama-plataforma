@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Museo Emocional - Convocatoria Artística</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2, h3 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        p {
+            text-align: justify;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>MUSEO EMOCIONAL</h2>
+        <p>
+            ¡Queremos conocer tus expresiones artísticas!
+        </p>
+        <p>
+            Te invitamos a formar parte de nuestra convocatoria artística, donde tendrás la oportunidad de explorar y expresar tus emociones a través de diversas formas de arte como el dibujo, la pintura, el canto, la fotografía, el baile o la actuación, entre muchas otras actividades. No olvides que no necesitas ser un gran experto o experta, esta convocatoria está abierta para todos y todas, sin importar tu nivel de habilidad.
+        </p>
+        <p>
+            Queremos resaltar que el arte no se trata de talento, sino de una poderosa herramienta para gestionar y canalizar nuestras emociones de manera saludable.
+        </p>
+        <p>
+            El objetivo de este proyecto es demostrar como el arte puede ser un medio valioso para expresar aquello que a veces no podemos poner en palabras. A través del arte, podemos encontrar una forma de conectar con nuestras emociones, comprenderlas y comunicarlas de una manera única y significativa.
+        </p>
+        <p>
+            Te animamos a participar y descubrir cómo el arte puede ayudarte a explorar y gestionar tus sentimientos, creando un espacio para la reflexión personal y el bienestar emocional.
+        </p>
+        <p>
+            ¡Esperamos contar contigo y ver cómo cada uno de ustedes encuentra su propia forma de expresión!
+        </p>
+        <h3>Enviar Imagen o Video</h3>
+        <form id="uploadForm">
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="description">Breve descripción de tu obra:</label>
+            <textarea id="description" name="description" rows="4" required></textarea>
+
+            <label for="file">Selecciona una imagen o video (máx. 30 MB):</label>
+            <input type="file" id="file" name="file" accept="image/*,video/*" required>
+
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-re8gDVIJurM_huLeglRx3sj8LhSZsUg",
+            authDomain: "aprendizaje-descentra.firebaseapp.com",
+            projectId: "aprendizaje-descentra",
+            storageBucket: "aprendizaje-descentra.appspot.com",
+            messagingSenderId: "308825102814",
+            appId: "1:308825102814:web:6f6ac3f104b9749360e54f",
+            measurementId: "G-B5Y12HQPYS"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        const storage = firebase.storage();
+        const db = firebase.firestore();
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('file');
+            const file = fileInput.files[0];
+            const name = document.getElementById('name').value;
+            const description = document.getElementById('description').value;
+
+            if (file.size > 30 * 1024 * 1024) { // 30 MB en bytes
+                alert('El archivo no debe superar los 30 MB.');
+                return;
+            }
+
+            try {
+                const storageRef = storage.ref().child(`uploads/${file.name}`);
+                await storageRef.put(file);
+                const fileURL = await storageRef.getDownloadURL();
+
+                await db.collection('artworks').add({
+                    name: name,
+                    description: description,
+                    fileURL: fileURL,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert('Archivo y datos subidos con éxito. Serán cargados al museo emocional después de la debida revisión.');
+                console.log('Nombre:', name);
+                console.log('Descripción:', description);
+                console.log('URL del archivo:', fileURL);
+            } catch (error) {
+                console.error('Error al subir el archivo:', error);
+                alert('Hubo un error al subir el archivo.');
+            }
+        
+
+        window.location.href = 'museo.html';
+            } catch (error) {
+                console.error('Error al subir el archivo:', error);
+                alert('Hubo un error al subir el archivo.');
+            
+        });
+    </script>
+    </script>
+</body>
+</html>
+
